@@ -61,10 +61,11 @@ uint16_t coapClient::ping(IPAddress ip,int port){
 }
 
 //observe request
-uint16_t coapClient::observe(IPAddress ip,int port,char *url,uint8_t optionbuffer){
+uint16_t coapClient::observe(IPAddress ip,int port,char *url, uint8_t optionbuffer){
 	uint8_t token=rand();
-	send(ip,port,url,COAP_CON,COAP_GET,&token,sizeof(token),NULL,0,COAP_OBSERVE,optionbuffer);
-
+	Serial.println(sizeof(token));
+	Serial.println(sizeof((uint8_t )0));
+	send(ip,port,url,COAP_CON,COAP_GET,&token,sizeof(token),NULL,0, COAP_OBSERVE, (uint8_t )0);
 }
 
 uint16_t coapClient::observeCancel(IPAddress ip,int port,char *url){
@@ -87,6 +88,14 @@ uint16_t coapClient::send(IPAddress ip, int port, char *url, COAP_TYPE type, COA
 	packet.optionnum = 0;
 	packet.messageid = rand();//ESP8266TrueRandom.random(4294967295);//random(0, 4294967295);
 	
+	if(number < COAP_URI_PATH)
+	{
+		packet.options[packet.optionnum].buffer = &optionbuffer;
+		packet.options[packet.optionnum].length = sizeof(optionbuffer);
+		packet.options[packet.optionnum].number = number;
+		packet.optionnum++;
+	}
+
 	if(method!=COAP_EMPTY){
 
 		// options
@@ -96,13 +105,14 @@ uint16_t coapClient::send(IPAddress ip, int port, char *url, COAP_TYPE type, COA
 		packet.optionnum++;
 	}
 
-	if(number)
+	if(number > COAP_URI_PATH)
 	{
 		packet.options[packet.optionnum].buffer = &optionbuffer;
 		packet.options[packet.optionnum].length = sizeof(optionbuffer);
 		packet.options[packet.optionnum].number = number;
 		packet.optionnum++;
 	}
+	
 	// send packet
 	sendPacket(packet, ip, port);
 }
@@ -198,8 +208,9 @@ bool coapClient::loop() {
 	int32_t packetlen = udp.parsePacket();
 
 	while (packetlen > 0) {
+		Serial.println("entered");
 		packetlen = udp.read(buffer, packetlen >= BUF_MAX_SIZE ? BUF_MAX_SIZE : packetlen);
-
+		Serial.println("readed");
 		coapPacket packet;
 
 		// parse coap packet header
@@ -250,8 +261,16 @@ bool coapClient::loop() {
 
 		} 
 
+		if (packet.type == COAP_CON) {
+			// call response function
+			received_resp(packet, udp.remoteIP(), udp.remotePort());
+
+		} 
+
+		Serial.println("outing");
 		return true;
 	}
+	Serial.println("not entered");
 	return false;
 }
 

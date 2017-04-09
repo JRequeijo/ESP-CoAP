@@ -115,6 +115,7 @@ typedef void (*callback)(coapPacket &, IPAddress, int);
 class coapClient{
 	public: 
 		callback resp;
+		callback received_resp;
 		bool start();
 		bool start(int port);
 		bool loop();
@@ -131,6 +132,7 @@ class coapClient{
 
 		uint16_t observeCancel(IPAddress ip,int port,char *url);
 		void response(callback c) { resp = c; }
+		void received_response(callback c) { received_resp = c; }
 		int parseOption(coapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
 
 };
