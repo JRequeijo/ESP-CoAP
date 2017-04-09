@@ -252,7 +252,7 @@ bool coapClient::loop() {
 
 		return true;
 	}
-
+	return false;
 }
 
 //parse option
