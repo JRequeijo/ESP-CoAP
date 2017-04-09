@@ -10,6 +10,7 @@ version 3 of the License, or (at your option) any later version.
 
 #include "coap_client.h"
 
+
 //creating instance for required class
 WiFiUDP udp;
 
@@ -26,24 +27,30 @@ bool coapClient::start(int port) {
 
 //get request
 uint16_t coapClient::get(IPAddress ip, int port, char *url) {
-	send(ip, port, url, COAP_CON, COAP_GET, NULL, 0, NULL, 0,0,NULL);
+	
+	uint8_t token = COAP_GET;
+	send(ip, port, url, COAP_CON, COAP_GET, &token, sizeof(token), NULL, 0,0,NULL);
 }
 
 //put request
 uint16_t coapClient::put(IPAddress ip, int port, char *url, char *payload, int payloadlen) {
-	send(ip, port, url, COAP_CON, COAP_PUT, NULL, 0, (uint8_t *)payload, payloadlen,0,NULL);
+	uint8_t token = COAP_PUT;
+
+	send(ip, port, url, COAP_CON, COAP_PUT, &token, sizeof(token), (uint8_t *)payload, payloadlen, COAP_CONTENT_FORMAT, 50);
 }
 
 //post request
 uint16_t coapClient::post(IPAddress ip, int port, char *url, char *payload, int payloadlen) {
-	send(ip, port, url, COAP_CON, COAP_POST, NULL, 0, (uint8_t *)payload, payloadlen,0,NULL);
+	uint8_t token = COAP_POST;
+
+	send(ip, port, url, COAP_CON, COAP_POST, &token, sizeof(token), (uint8_t *)payload, payloadlen, COAP_CONTENT_FORMAT, 50);
 }
 
 //delete request
 uint16_t coapClient::delet(IPAddress ip, int port, char *url){
-	send(ip, port, url, COAP_CON, COAP_DELETE, NULL, 0, NULL, 0,0,NULL);
+	uint8_t token = COAP_DELETE;
 
-
+	send(ip, port, url, COAP_CON, COAP_DELETE, &token, sizeof(token), NULL, 0,0,NULL);
 }
 
 //ping
@@ -78,22 +85,22 @@ uint16_t coapClient::send(IPAddress ip, int port, char *url, COAP_TYPE type, COA
 	packet.payload = payload;
 	packet.payloadlen = payloadlen;
 	packet.optionnum = 0;
-	packet.messageid = rand();
-
-	if(number)
-	{
-		packet.options[packet.optionnum].buffer = &optionbuffer;
-		packet.options[packet.optionnum].length = 0;
-		packet.options[packet.optionnum].number = number;
-		packet.optionnum++;
-	}
-
+	packet.messageid = rand();//ESP8266TrueRandom.random(4294967295);//random(0, 4294967295);
+	
 	if(method!=COAP_EMPTY){
 
 		// options
 		packet.options[packet.optionnum].buffer = (uint8_t *)url;
 		packet.options[packet.optionnum].length = strlen(url);
 		packet.options[packet.optionnum].number = COAP_URI_PATH;
+		packet.optionnum++;
+	}
+
+	if(number)
+	{
+		packet.options[packet.optionnum].buffer = &optionbuffer;
+		packet.options[packet.optionnum].length = sizeof(optionbuffer);
+		packet.options[packet.optionnum].number = number;
 		packet.optionnum++;
 	}
 	// send packet
