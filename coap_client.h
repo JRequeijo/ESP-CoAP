@@ -40,31 +40,7 @@ typedef enum {
 	COAP_GET = 1,
 	COAP_POST = 2,
 	COAP_PUT = 3,
-	COAP_DELETE = 4
-} COAP_METHOD;
-
-//coap option values
-typedef enum {
-	COAP_IF_MATCH = 1,
-	COAP_URI_HOST = 3,
-	COAP_E_TAG = 4,
-	COAP_IF_NONE_MATCH = 5,
-	COAP_URI_PORT = 7,
-	COAP_LOCATION_PATH = 8,
-	COAP_URI_PATH = 11,
-	COAP_CONTENT_FORMAT = 12,
-	COAP_MAX_AGE = 14,
-	COAP_URI_QUERY = 15,
-	COAP_ACCEPT = 17,
-	COAP_LOCATION_QUERY = 20,
-	COAP_BLOCK_2=23,
-	COAP_PROXY_URI = 35,
-	COAP_PROXY_SCHEME = 39,
-	COAP_OBSERVE=6
-} COAP_OPTION_NUMBER;
-
-typedef enum {
-	COAP_EMPTY_MESSAGE=0,
+	COAP_DELETE = 4,
 	COAP_CREATED =65,
 	COAP_DELETED = 66,
 	COAP_VALID = 67,
@@ -85,7 +61,27 @@ typedef enum {
 	COAP_SERVICE_UNAVALIABLE =163,
 	COAP_GATEWAY_TIMEOUT = 164,
 	COAP_PROXYING_NOT_SUPPORTED = 165
-} COAP_RESPONSE_CODE;
+} COAP_CODE;
+
+//coap option values
+typedef enum {
+	COAP_IF_MATCH = 1,
+	COAP_URI_HOST = 3,
+	COAP_E_TAG = 4,
+	COAP_IF_NONE_MATCH = 5,
+	COAP_URI_PORT = 7,
+	COAP_LOCATION_PATH = 8,
+	COAP_URI_PATH = 11,
+	COAP_CONTENT_FORMAT = 12,
+	COAP_MAX_AGE = 14,
+	COAP_URI_QUERY = 15,
+	COAP_ACCEPT = 17,
+	COAP_LOCATION_QUERY = 20,
+	COAP_BLOCK_2=23,
+	COAP_PROXY_URI = 35,
+	COAP_PROXY_SCHEME = 39,
+	COAP_OBSERVE=6
+} COAP_OPTION_NUMBER;
 
 //coap option class 
 class coapOption {
@@ -125,8 +121,9 @@ class coapClient{
 		uint16_t delet(IPAddress ip, int port, char *url);
 		uint16_t ping(IPAddress ip, int port);
 		uint16_t observe(IPAddress ip,int port,char *url,uint8_t observe); 
+		uint16_t sendACK(IPAddress ip,int port, coapPacket packet);
 
-		uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen,uint8_t number,uint8_t buffer);
+		uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_CODE method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen,uint8_t number,uint8_t buffer);
 
 		uint16_t sendPacket(coapPacket &packet, IPAddress ip, int port);
 

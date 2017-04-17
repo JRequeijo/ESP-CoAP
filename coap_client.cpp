@@ -56,7 +56,7 @@ uint16_t coapClient::delet(IPAddress ip, int port, char *url){
 //ping
 uint16_t coapClient::ping(IPAddress ip,int port){
 	
-	send (ip,port,NULL,COAP_CON,COAP_EMPTY,NULL,0,NULL,0,0,NULL);
+	send(ip,port,NULL,COAP_CON,COAP_EMPTY,NULL,0,NULL,0,0,NULL);
 
 }
 
@@ -73,8 +73,33 @@ uint16_t coapClient::observeCancel(IPAddress ip,int port,char *url){
 
 }
 
+uint16_t coapClient::sendACK(IPAddress ip,int port,coapPacket packet){
 
-uint16_t coapClient::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_METHOD method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen,uint8_t number,uint8_t optionbuffer) {
+	coapPacket ackpacket;
+
+	//make packe
+	ackpacket.type = COAP_ACK;
+	ackpacket.code = COAP_EMPTY;
+	ackpacket.token = packet.token;
+	ackpacket.tokenlen = packet.tokenlen;
+	ackpacket.payload = NULL;
+	ackpacket.payloadlen = 0;
+	ackpacket.optionnum = 0;
+	// for(int i=0; i<ackpacket.optionnum; i++){
+	// 	ackpacket.options[i] = packet.options[i];
+	// }
+	ackpacket.messageid = packet.messageid;
+
+	Serial.println("Sending ACK");
+	Serial.println(ackpacket.type);
+	Serial.println(ackpacket.code);
+	Serial.println(ackpacket.messageid);
+	uint16_t mid = sendPacket(ackpacket, ip, port);
+	Serial.print("ACK SENT ");
+	Serial.println(mid);
+}
+
+uint16_t coapClient::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_CODE method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen,uint8_t number,uint8_t optionbuffer) {
 
 	coapPacket packet;
 
@@ -257,20 +282,22 @@ bool coapClient::loop() {
 
 		if (packet.type == COAP_ACK || packet.type ==  COAP_RESET) {
 			// call response function
+			Serial.println("Normal");
 			resp(packet, udp.remoteIP(), udp.remotePort());
-
+			Serial.println("Normal OUt");
 		} 
 
 		if (packet.type == COAP_CON) {
 			// call response function
+			Serial.println("from observe");
 			received_resp(packet, udp.remoteIP(), udp.remotePort());
-
+			sendACK(udp.remoteIP(), udp.remotePort(), packet);
+			Serial.println("from observe OUt");
 		} 
 
 		Serial.println("outing");
 		return true;
 	}
-	Serial.println("not entered");
 	return false;
 }
 
