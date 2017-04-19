@@ -27,7 +27,6 @@ bool coapClient::start(int port) {
 
 //get request
 uint16_t coapClient::get(IPAddress ip, int port, char *url) {
-	
 	uint8_t token = COAP_GET;
 	send(ip, port, url, COAP_CON, COAP_GET, &token, sizeof(token), NULL, 0,0,NULL);
 }
@@ -35,36 +34,29 @@ uint16_t coapClient::get(IPAddress ip, int port, char *url) {
 //put request
 uint16_t coapClient::put(IPAddress ip, int port, char *url, char *payload, int payloadlen) {
 	uint8_t token = COAP_PUT;
-
 	send(ip, port, url, COAP_CON, COAP_PUT, &token, sizeof(token), (uint8_t *)payload, payloadlen, COAP_CONTENT_FORMAT, 50);
 }
 
 //post request
 uint16_t coapClient::post(IPAddress ip, int port, char *url, char *payload, int payloadlen) {
 	uint8_t token = COAP_POST;
-
 	send(ip, port, url, COAP_CON, COAP_POST, &token, sizeof(token), (uint8_t *)payload, payloadlen, COAP_CONTENT_FORMAT, 50);
 }
 
 //delete request
 uint16_t coapClient::delet(IPAddress ip, int port, char *url){
 	uint8_t token = COAP_DELETE;
-
 	send(ip, port, url, COAP_CON, COAP_DELETE, &token, sizeof(token), NULL, 0,0,NULL);
 }
 
 //ping
 uint16_t coapClient::ping(IPAddress ip,int port){
-	
 	send(ip,port,NULL,COAP_CON,COAP_EMPTY,NULL,0,NULL,0,0,NULL);
-
 }
 
 //observe request
 uint16_t coapClient::observe(IPAddress ip,int port,char *url, uint8_t optionbuffer){
 	uint8_t token=rand();
-	Serial.println(sizeof(token));
-	Serial.println(sizeof((uint8_t )0));
 	send(ip,port,url,COAP_CON,COAP_GET,&token,sizeof(token),NULL,0, COAP_OBSERVE, (uint8_t )0);
 }
 
@@ -85,18 +77,9 @@ uint16_t coapClient::sendACK(IPAddress ip,int port,coapPacket packet){
 	ackpacket.payload = NULL;
 	ackpacket.payloadlen = 0;
 	ackpacket.optionnum = 0;
-	// for(int i=0; i<ackpacket.optionnum; i++){
-	// 	ackpacket.options[i] = packet.options[i];
-	// }
 	ackpacket.messageid = packet.messageid;
 
-	Serial.println("Sending ACK");
-	Serial.println(ackpacket.type);
-	Serial.println(ackpacket.code);
-	Serial.println(ackpacket.messageid);
 	uint16_t mid = sendPacket(ackpacket, ip, port);
-	Serial.print("ACK SENT ");
-	Serial.println(mid);
 }
 
 uint16_t coapClient::send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_CODE method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen,uint8_t number,uint8_t optionbuffer) {
@@ -233,9 +216,7 @@ bool coapClient::loop() {
 	int32_t packetlen = udp.parsePacket();
 
 	while (packetlen > 0) {
-		Serial.println("entered");
 		packetlen = udp.read(buffer, packetlen >= BUF_MAX_SIZE ? BUF_MAX_SIZE : packetlen);
-		Serial.println("readed");
 		coapPacket packet;
 
 		// parse coap packet header
@@ -282,20 +263,15 @@ bool coapClient::loop() {
 
 		if (packet.type == COAP_ACK || packet.type ==  COAP_RESET) {
 			// call response function
-			Serial.println("Normal");
 			resp(packet, udp.remoteIP(), udp.remotePort());
-			Serial.println("Normal OUt");
 		} 
 
 		if (packet.type == COAP_CON) {
 			// call response function
-			Serial.println("from observe");
 			received_resp(packet, udp.remoteIP(), udp.remotePort());
 			sendACK(udp.remoteIP(), udp.remotePort(), packet);
-			Serial.println("from observe OUt");
 		} 
 
-		Serial.println("outing");
 		return true;
 	}
 	return false;
