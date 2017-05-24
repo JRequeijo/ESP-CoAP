@@ -55,8 +55,7 @@ uint16_t coapClient::ping(IPAddress ip,int port){
 }
 
 //observe request
-uint16_t coapClient::observe(IPAddress ip,int port,char *url, uint8_t optionbuffer){
-	uint8_t token=rand();
+uint16_t coapClient::observe(IPAddress ip,int port,char *url, uint8_t optionbuffer, uint8_t token){
 	send(ip,port,url,COAP_CON,COAP_GET,&token,sizeof(token),NULL,0, COAP_OBSERVE, (uint8_t )0);
 }
 
@@ -263,12 +262,12 @@ bool coapClient::loop() {
 
 		if (packet.type == COAP_ACK || packet.type ==  COAP_RESET) {
 			// call response function
-			resp(packet, udp.remoteIP(), udp.remotePort());
+			req_response(packet, udp.remoteIP(), udp.remotePort());
 		} 
 
 		if (packet.type == COAP_CON) {
 			// call response function
-			received_resp(packet, udp.remoteIP(), udp.remotePort());
+			obs_response(packet, udp.remoteIP(), udp.remotePort());
 			sendACK(udp.remoteIP(), udp.remotePort(), packet);
 		} 
 
@@ -322,7 +321,6 @@ int coapClient::parseOption(coapOption *option, uint16_t *running_delta, uint8_t
 
 	return 0;
 }
-
 
 
 

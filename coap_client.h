@@ -110,8 +110,8 @@ typedef void (*callback)(coapPacket &, IPAddress, int);
 
 class coapClient{
 	public: 
-		callback resp;
-		callback received_resp;
+		callback req_response;
+		callback obs_response;
 		bool start();
 		bool start(int port);
 		bool loop();
@@ -120,7 +120,7 @@ class coapClient{
 		uint16_t post(IPAddress ip, int port, char *url, char *payload,int payloadlen);
 		uint16_t delet(IPAddress ip, int port, char *url);
 		uint16_t ping(IPAddress ip, int port);
-		uint16_t observe(IPAddress ip,int port,char *url,uint8_t observe); 
+		uint16_t observe(IPAddress ip,int port,char *url, uint8_t observe, uint8_t token); 
 		uint16_t sendACK(IPAddress ip,int port, coapPacket packet);
 
 		uint16_t send(IPAddress ip, int port, char *url, COAP_TYPE type, COAP_CODE method, uint8_t *token, uint8_t tokenlen, uint8_t *payload, uint32_t payloadlen,uint8_t number,uint8_t buffer);
@@ -128,8 +128,8 @@ class coapClient{
 		uint16_t sendPacket(coapPacket &packet, IPAddress ip, int port);
 
 		uint16_t observeCancel(IPAddress ip,int port,char *url);
-		void response(callback c) { resp = c; }
-		void received_response(callback c) { received_resp = c; }
+		void request_response(callback c) { req_response = c; }
+		void observe_response(callback c) { obs_response = c; }
 		int parseOption(coapOption *option, uint16_t *running_delta, uint8_t **buf, size_t buflen);
 
 };
